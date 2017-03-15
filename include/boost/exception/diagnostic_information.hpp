@@ -9,6 +9,7 @@
 #include <boost/config.hpp>
 #include <boost/exception/get_error_info.hpp>
 #include <boost/exception/info.hpp>
+#include <boost/type_traits/is_polymorphic.hpp>
 #include <boost/utility/enable_if.hpp>
 #ifndef BOOST_NO_RTTI
 #include <boost/core/demangle.hpp>
@@ -64,6 +65,15 @@ boost
             return e;
             }
 
+#ifndef BOOST_NO_RTTI
+        template <class T>
+        typename enable_if<is_polymorphic<T>,exception const *>::type
+        get_boost_exception( T const & e )
+            {
+            return dynamic_cast<exception const *>(&e);
+            }
+#endif
+
         inline
         exception const *
         get_boost_exception( ... )
@@ -77,6 +87,15 @@ boost
             {
             return e;
             }
+
+#ifndef BOOST_NO_RTTI
+        template <class T>
+        typename enable_if<is_polymorphic<T>,std::exception const *>::type
+        get_boost_exception( T const & e )
+            {
+            return dynamic_cast<std::exception const *>(&e);
+            }
+#endif
 
         inline
         std::exception const *

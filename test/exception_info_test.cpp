@@ -180,9 +180,9 @@ test_throw_catch_add_info()
         catch( boost::exception_info & xi )
             {
             xi.set<tag2>(42.42f);
-			BOOST_TEST(xi.file()==0);
-			BOOST_TEST(xi.line()==0);
-			BOOST_TEST(xi.function()==0);
+            BOOST_TEST(xi.file()==0);
+            BOOST_TEST(xi.line()==0);
+            BOOST_TEST(xi.function()==0);
             throw;
             }
         catch(...)
@@ -218,43 +218,43 @@ test_throw_catch_add_info()
     }
 void
 test_diagnostic_info()
-	{
-	std::string s1;
-	try
-		{
-		boost::throw_with_info(test_exception());
-		BOOST_ERROR("boost::throw_with_info didn't throw");
-		}
-	catch( boost::exception_info & xi )
-		{
-		s1=xi.diagnostic_info();
-		}
-	BOOST_TEST(!s1.empty());
-	std::string s2;
-	try
-		{
-		boost::throw_with_info(test_exception());
-		BOOST_ERROR("boost::throw_with_info didn't throw");
-		}
-	catch( test_exception & e )
-		{
-		s2=boost::exception_diagnostic_info(e);
-		}
-	BOOST_TEST(s2.size()>=s1.size());
-	BOOST_TEST(s2.find(s1)!=std::string::npos);
-	std::string s3;
-	try
-		{
-		boost::throw_with_info(test_exception());
-		BOOST_ERROR("boost::throw_with_info didn't throw");
-		}
-	catch( ... )
-		{
-		s3=boost::exception_diagnostic_info(boost::current_exception());
-		}
-	BOOST_TEST(s3==s2);
-	std::cout << "s1:" << s1 << '\n' << "s2:" << s2 << '\n' << "s3:" << s3 << '\n';
-	}
+    {
+    std::string s1;
+    try
+        {
+        boost::throw_with_info(test_exception());
+        BOOST_ERROR("boost::throw_with_info didn't throw");
+        }
+    catch( boost::exception_info & xi )
+        {
+        s1=xi.diagnostic_info();
+        }
+    BOOST_TEST(!s1.empty());
+    std::string s2;
+    try
+        {
+        boost::throw_with_info(test_exception());
+        BOOST_ERROR("boost::throw_with_info didn't throw");
+        }
+    catch( test_exception & e )
+        {
+        s2=boost::exception_diagnostic_info(e);
+        }
+    BOOST_TEST(s2.size()>=s1.size());
+    BOOST_TEST(s2.find(s1)!=std::string::npos);
+    std::string s3;
+    try
+        {
+        boost::throw_with_info(test_exception());
+        BOOST_ERROR("boost::throw_with_info didn't throw");
+        }
+    catch( ... )
+        {
+        s3=boost::exception_diagnostic_info(boost::current_exception());
+        }
+    BOOST_TEST(s3==s2);
+    std::cout << "s1:" << s1 << '\n' << "s2:" << s2 << '\n' << "s3:" << s3 << '\n';
+    }
 int
 main()
     {
@@ -265,7 +265,7 @@ main()
     test_throw_catch();
     test_throw_catch_info();
     test_throw_catch_add_info();
-	test_diagnostic_info();
+    test_diagnostic_info();
     BOOST_TEST(count==0);
     return boost::report_errors();
     }
