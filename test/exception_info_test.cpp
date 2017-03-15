@@ -3,8 +3,6 @@
 //Distributed under the Boost Software License, Version 1.0. (See accompanying
 //file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
-#ifdef BOOST_EXCEPTION_ENABLE_EXCEPTION_INFO
-
 #include <boost/exception/exception_info.hpp>
 #include <boost/detail/lightweight_test.hpp>
 
@@ -147,7 +145,7 @@ test_throw_catch_info()
             {
             boost::exception_info * xi=boost::get_exception_info(e);
             BOOST_TEST(strcmp(xi->file(),__FILE__)==0);
-            BOOST_TEST(xi->line()==140);
+            BOOST_TEST(xi->line()==138);
             BOOST_TEST(strstr(xi->function(),"test_throw_catch_info")!=0);
             BOOST_TEST(xi!=0);
             xi->set<tag1>(43);
@@ -270,13 +268,3 @@ main()
     BOOST_TEST(count==0);
     return boost::report_errors();
     }
-
-#else
-
-int
-main()
-    {
-    return 0;
-    }
-
-#endif

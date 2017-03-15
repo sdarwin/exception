@@ -6,10 +6,6 @@
 #ifndef UUID_4CDEC1F0086811E7AD630C0D63EDCBF1
 #define UUID_4CDEC1F0086811E7AD630C0D63EDCBF1
 
-#ifndef BOOST_EXCEPTION_ENABLE_EXCEPTION_INFO
-#error This header requires BOOST_EXCEPTION_ENABLE_EXCEPTION_INFO
-#endif
-
 #include <boost/exception/diagnostic_information.hpp>
 #include <boost/exception_ptr.hpp>
 
