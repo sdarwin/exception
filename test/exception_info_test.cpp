@@ -253,6 +253,7 @@ test_diagnostic_info()
 		s3=boost::exception_diagnostic_info(boost::current_exception());
 		}
 	BOOST_TEST(s3==s2);
+	std::cout << "s1:" << s1 << '\n' << "s2:" << s2 << '\n' << "s3:" << s3 << '\n';
 	}
 int
 main()
