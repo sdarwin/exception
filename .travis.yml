@@ -13,11 +13,6 @@ os:
   - linux
   - osx
 
-branches:
-  only:
-    - master
-    - develop
-
 env:
   matrix:
     - BOGUS_JOB=true
@@ -86,6 +81,10 @@ install:
   - git submodule update --init tools/boostdep
   - cp -r $TRAVIS_BUILD_DIR/* libs/exception
   - python tools/boostdep/depinst/depinst.py exception
+  - cd libs/throw_exception
+  - git checkout exception_info
+  - git pull
+  - cd ../..
   - ./bootstrap.sh
   - ./b2 headers
 
