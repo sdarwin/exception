@@ -72,7 +72,7 @@ boost
         get_info<throw_line>( exception const & x )
             {
             int & v=access_throw_line(x);
-            return v!=-1 ? &v : 0;
+            return v!=0 ? &v : 0;
             }
 
         template <class T,class R>

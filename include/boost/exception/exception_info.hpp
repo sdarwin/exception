@@ -31,7 +31,7 @@ boost
                 {
                 }
             };
-        throw wrapper(e,xi);
+        throw enable_current_exception(wrapper(e,xi));
         }
     template <class E>
     void
@@ -48,7 +48,7 @@ boost
                 {
                 }
             };
-        throw wrapper(std::move(e),std::move(xi));
+        throw enable_current_exception(wrapper(std::move(e),std::move(xi)));
         }
 
     ////////////////////////////////////////////////////////////////////////
@@ -70,13 +70,13 @@ boost
 
     template <class E>
     std::string
-    diagnostic_info( E const & e )
+    exception_diagnostic_info( E const & e )
         {
         return diagnostic_information(e);
         }
     inline
     std::string
-    diagnostic_info( exception_ptr const & p )
+    exception_diagnostic_info( exception_ptr const & p )
         {
         return diagnostic_information(p);
         }
