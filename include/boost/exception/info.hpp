@@ -55,59 +55,6 @@ boost
         error_info_container_impl:
             public error_info_container
             {
-            public:
-
-            error_info_container_impl():
-                count_(0)
-                {
-                }
-
-            ~error_info_container_impl() throw()
-                {
-                }
-
-            void
-            set( shared_ptr<error_info_base> const & x, type_info_ const & typeid_ )
-                {
-                BOOST_ASSERT(x);
-                info_[typeid_] = x;
-                diagnostic_info_str_.clear();
-                }
-
-            shared_ptr<error_info_base>
-            get( type_info_ const & ti ) const
-                {
-                error_info_map::const_iterator i=info_.find(ti);
-                if( info_.end()!=i )
-                    {
-                    shared_ptr<error_info_base> const & p = i->second;
-#ifndef BOOST_NO_RTTI
-                    BOOST_ASSERT( *BOOST_EXCEPTION_DYNAMIC_TYPEID(*p).type_==*ti.type_ );
-#endif
-                    return p;
-                    }
-                return shared_ptr<error_info_base>();
-                }
-
-            char const *
-            diagnostic_information( char const * header ) const
-                {
-                if( header )
-                    {
-                    std::ostringstream tmp;
-                    tmp << header;
-                    for( error_info_map::const_iterator i=info_.begin(),end=info_.end(); i!=end; ++i )
-                        {
-                        error_info_base const & x = *i->second;
-                        tmp << x.name_value_string();
-                        }
-                    tmp.str().swap(diagnostic_info_str_);
-                    }
-                return diagnostic_info_str_.c_str();
-                }
-
-            private:
-
             friend class boost::exception;
 
             typedef std::map< type_info_, shared_ptr<error_info_base> > error_info_map;
@@ -142,107 +89,171 @@ boost
                 refcount_ptr<error_info_container> p;
                 error_info_container_impl * c=new error_info_container_impl;
                 p.adopt(c);
-                c->info_ = info_;
+                for( error_info_map::const_iterator i=info_.begin(),e=info_.end(); i!=e; ++i )
+                    {
+                    shared_ptr<error_info_base> cp(i->second->clone());
+                    c->info_.insert(std::make_pair(i->first,cp));
+                    }
                 return p;
                 }
+
+            error_info_base *
+            get( type_info_ const & ti ) const
+                {
+                error_info_map::const_iterator i=info_.find(ti);
+                if( info_.end()!=i )
+                    {
+                    shared_ptr<error_info_base> const & p = i->second;
+#ifndef BOOST_NO_RTTI
+                    BOOST_ASSERT( *BOOST_EXCEPTION_DYNAMIC_TYPEID(*p).type_==*ti.type_ );
+#endif
+                    return p.get();
+                    }
+                return 0;
+                }
+
+            public:
+
+            error_info_container_impl():
+                count_(0)
+                {
+                }
+
+            ~error_info_container_impl() throw()
+                {
+                }
+
+            void
+            set( shared_ptr<error_info_base> const & x, type_info_ const & typeid_ )
+                {
+                BOOST_ASSERT(x);
+                info_[typeid_] = x;
+                diagnostic_info_str_.clear();
+                }
+
+            void
+            unset( type_info_ const & typeid_ )
+                {
+                info_.erase(typeid_);
+                diagnostic_info_str_.clear();
+                }
+
+            char const *
+            diagnostic_information( char const * header ) const
+                {
+                if( header )
+                    {
+                    std::ostringstream tmp;
+                    tmp << header;
+                    for( error_info_map::const_iterator i=info_.begin(),end=info_.end(); i!=end; ++i )
+                        {
+                        error_info_base const & x = *i->second;
+                        tmp << x.name_value_string();
+                        }
+                    tmp.str().swap(diagnostic_info_str_);
+                    }
+                return diagnostic_info_str_.c_str();
+                }
+
+            static
+            error_info_container_impl *
+            get_data( exception const & x )
+                {
+                exception_detail::error_info_container * c=x.data_.get();
+                if( !c )
+                    return 0;
+#ifndef BOOST_NO_RTTI
+                BOOST_ASSERT( 0!=dynamic_cast<error_info_container_impl *>(c) );
+#endif
+                return static_cast<error_info_container_impl *>(c);
+                }
+
+            static
+            error_info_container_impl &
+            get_data_create( exception const & x )
+                {
+                error_info_container_impl * ci;
+                if( exception_detail::error_info_container * c=x.data_.get() )
+                    {
+#ifndef BOOST_NO_RTTI
+                    BOOST_ASSERT( 0!=dynamic_cast<error_info_container_impl *>(c) );
+#endif
+                    ci=static_cast<error_info_container_impl *>(c);
+                    }
+                else
+                    x.data_.adopt(ci=new exception_detail::error_info_container_impl);
+                return *ci;
+                }
             };
+
+        template <class ErrorInfo>
+        inline
+        void
+        unset_info( boost::exception const & x )
+            {
+            if( exception_detail::error_info_container_impl * ci=error_info_container_impl::get_data(x) )
+                ci->unset(BOOST_EXCEPTION_STATIC_TYPEID(ErrorInfo));
+            }
+
+        template <class Tag,class T>
+        inline
+        void
+        set_info_( exception const & x, error_info<Tag,T> const & v )
+            {
+            typedef error_info<Tag,T> error_info_tag_t;
+            shared_ptr<error_info_tag_t> p( new error_info_tag_t(v) );
+            error_info_container_impl::get_data_create(x).set(p,BOOST_EXCEPTION_STATIC_TYPEID(error_info_tag_t));
+            }
 
         template <class E,class Tag,class T>
         inline
         E const &
         set_info( E const & x, error_info<Tag,T> const & v )
             {
-            typedef error_info<Tag,T> error_info_tag_t;
-            shared_ptr<error_info_tag_t> p( new error_info_tag_t(v) );
-            exception_detail::error_info_container * c=x.data_.get();
-            if( !c )
-                x.data_.adopt(c=new exception_detail::error_info_container_impl);
-            c->set(p,BOOST_EXCEPTION_STATIC_TYPEID(error_info_tag_t));
+            set_info_(x,v);
             return x;
             }
 
 #ifndef BOOST_NO_CXX11_RVALUE_REFERENCES
-        template <class E,class Tag,class T>
-        E const & set_info( E const &, error_info<Tag,T> && );
-        template <class T>
-        struct set_info_rv;
         template <class Tag,class T>
-        struct
-        set_info_rv<error_info<Tag,T> >
+        void
+        set_info_rv_( exception const & x, error_info<Tag,T> && v )
             {
-            template <class E,class Tag1,class T1>
-            friend E const & set_info( E const &, error_info<Tag1,T1> && );
-            template <class E>
-            static
-            E const &
-            set( E const & x, error_info<Tag,T> && v )
-                {
-                typedef error_info<Tag,T> error_info_tag_t;
-                shared_ptr<error_info_tag_t> p( new error_info_tag_t(std::move(v)) );
-                exception_detail::error_info_container * c=x.data_.get();
-                if( !c )
-                    x.data_.adopt(c=new exception_detail::error_info_container_impl);
-                c->set(p,BOOST_EXCEPTION_STATIC_TYPEID(error_info_tag_t));
-                return x;
-                }
-            };
-        template <>
-        struct
-        set_info_rv<throw_function>
+            typedef error_info<Tag,T> error_info_tag_t;
+            shared_ptr<error_info_tag_t> p( new error_info_tag_t(std::move(v)) );
+            error_info_container_impl::get_data_create(x).set(p,BOOST_EXCEPTION_STATIC_TYPEID(error_info_tag_t));
+            }
+        inline
+        void
+        set_info_rv_( exception const & x, throw_function && y )
             {
-            template <class E,class Tag1,class T1>
-            friend E const & set_info( E const &, error_info<Tag1,T1> && );
-            template <class E>
-            static
-            E const &
-            set( E const & x, throw_function && y )
-                {
-                x.throw_function_=y.v_;
-                return x;
-                }
-            };
-        template <>
-        struct
-        set_info_rv<throw_file>
+            access_throw_function(x)=y.v_;
+            }
+        inline
+        void
+        set_info_rv_( exception const & x, throw_file && y )
             {
-            template <class E,class Tag1,class T1>
-            friend E const & set_info( E const &, error_info<Tag1,T1> && );
-            template <class E>
-            static
-            E const &
-            set( E const & x, throw_file && y )
-                {
-                x.throw_file_=y.v_;
-                return x;
-                }
-            };
-        template <>
-        struct
-        set_info_rv<throw_line>
+            access_throw_file(x)=y.v_;
+            }
+        inline
+        void
+        set_info_rv_( exception const & x, throw_line && y )
             {
-            template <class E,class Tag1,class T1>
-            friend E const & set_info( E const &, error_info<Tag1,T1> && );
-            template <class E>
-            static
-            E const &
-            set( E const & x, throw_line && y )
-                {
-                x.throw_line_=y.v_;
-                return x;
-                }
-            };
+            access_throw_line(x)=y.v_;
+            }
         template <class E,class Tag,class T>
         inline
         E const &
-        set_info( E const & x, error_info<Tag,T> && v )
+        set_info_rv( E const & x, error_info<Tag,T> && y )
             {
-            return set_info_rv<error_info<Tag,T> >::template set<E>(x,std::move(v));
+            set_info_rv_(x,std::move(y));
+            return x;
             }
 #endif
 
         template <class T>
         struct
-        derives_boost_exception
+        derives_from_boost_exception
             {
             enum e { value = (sizeof(dispatch_boost_exception((T*)0))==sizeof(large_size)) };
             };
@@ -250,7 +261,7 @@ boost
 
     template <class E,class Tag,class T>
     inline
-    typename enable_if<exception_detail::derives_boost_exception<E>,E const &>::type
+    typename enable_if<exception_detail::derives_from_boost_exception<E>,E const &>::type
     operator<<( E const & x, error_info<Tag,T> const & v )
         {
         return exception_detail::set_info(x,v);
@@ -259,10 +270,10 @@ boost
 #ifndef BOOST_NO_CXX11_RVALUE_REFERENCES
     template <class E,class Tag,class T>
     inline
-    typename enable_if<exception_detail::derives_boost_exception<E>,E const &>::type
+    typename enable_if<exception_detail::derives_from_boost_exception<E>,E const &>::type
     operator<<( E const & x, error_info<Tag,T> && v )
         {
-        return exception_detail::set_info(x,std::move(v));
+        return exception_detail::set_info_rv(x,std::move(v));
         }
 #endif
     }

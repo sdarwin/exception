@@ -13,60 +13,60 @@ boost
     exception_test
         {
         inline
-        derives_boost_exception::
-        derives_boost_exception( int x ):
+        derives_from_boost_exception::
+        derives_from_boost_exception( int x ):
             x_(x)
             {
             }
 
-        derives_boost_exception::
-        ~derives_boost_exception() throw()
+        derives_from_boost_exception::
+        ~derives_from_boost_exception() throw()
             {
             }
 
         inline
-        derives_boost_exception_virtually::
-        derives_boost_exception_virtually( int x ):
+        derives_from_boost_exception_virtually::
+        derives_from_boost_exception_virtually( int x ):
             x_(x)
             {
             }
 
-        derives_boost_exception_virtually::
-        ~derives_boost_exception_virtually() throw()
+        derives_from_boost_exception_virtually::
+        ~derives_from_boost_exception_virtually() throw()
             {
             }
 
         inline
-        derives_std_exception::
-        derives_std_exception( int x ):
+        derives_from_std_exception::
+        derives_from_std_exception( int x ):
             x_(x)
             {
             }
 
-        derives_std_exception::
-        ~derives_std_exception() throw()
+        derives_from_std_exception::
+        ~derives_from_std_exception() throw()
             {
             }
 
         template <>
         void
-        throw_test_exception<derives_boost_exception>( int x )
+        throw_test_exception<derives_from_boost_exception>( int x )
             {
-            boost::throw_exception( derives_boost_exception(x) );
+            boost::throw_exception( derives_from_boost_exception(x) );
             }
 
         template <>
         void
-        throw_test_exception<derives_boost_exception_virtually>( int x )
+        throw_test_exception<derives_from_boost_exception_virtually>( int x )
             {
-            boost::throw_exception( derives_boost_exception_virtually(x) );
+            boost::throw_exception( derives_from_boost_exception_virtually(x) );
             }
 
         template <>
         void
-        throw_test_exception<derives_std_exception>( int x )
+        throw_test_exception<derives_from_std_exception>( int x )
             {
-            boost::throw_exception( derives_std_exception(x) );
+            boost::throw_exception( derives_from_std_exception(x) );
             }
         }
     }

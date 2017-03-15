@@ -93,10 +93,7 @@ boost
             try
                 {
 #endif
-                error_info_container * c=x.data_.get();
-                if( !c )
-                    x.data_.adopt(c=new exception_detail::error_info_container_impl);
-                char const * di=c->diagnostic_information(header);
+                char const * di=error_info_container_impl::get_data_create(x).diagnostic_information(header);
                 BOOST_ASSERT(di!=0);
                 return di;
 #ifndef BOOST_NO_EXCEPTIONS

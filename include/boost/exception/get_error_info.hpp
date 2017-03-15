@@ -10,7 +10,6 @@
 #include <boost/exception/exception.hpp>
 #include <boost/exception/detail/error_info_impl.hpp>
 #include <boost/exception/detail/type_info.hpp>
-#include <boost/exception/detail/shared_ptr.hpp>
 #include <boost/assert.hpp>
 
 #if (__GNUC__*100+__GNUC_MINOR__>301) && !defined(BOOST_EXCEPTION_ENABLE_WARNINGS)
@@ -26,62 +25,55 @@ boost
     namespace
     exception_detail
         {
+        inline
+        error_info_container *
+        get_error_info_container( exception const & x )
+            {
+            return x.data_.get();
+            }
+
         template <class ErrorInfo>
-        struct
-        get_info
+        typename ErrorInfo::value_type *
+        get_info( exception const & x )
             {
-            static
-            typename ErrorInfo::value_type *
-            get( exception const & x )
-                {
-                if( exception_detail::error_info_container * c=x.data_.get() )
-                    if( shared_ptr<exception_detail::error_info_base> eib = c->get(BOOST_EXCEPTION_STATIC_TYPEID(ErrorInfo)) )
-                        {
+            if( exception_detail::error_info_container * c=get_error_info_container(x) )
+                if( exception_detail::error_info_base * eib = c->get(BOOST_EXCEPTION_STATIC_TYPEID(ErrorInfo)) )
+                    {
 #ifndef BOOST_NO_RTTI
-                        BOOST_ASSERT( 0!=dynamic_cast<ErrorInfo *>(eib.get()) );
+                    BOOST_ASSERT( 0!=dynamic_cast<ErrorInfo *>(eib) );
 #endif
-                        ErrorInfo * w = static_cast<ErrorInfo *>(eib.get());
-                        return &w->value();
-                        }
-                return 0;
-                }
-            };
+                    ErrorInfo * w = static_cast<ErrorInfo *>(eib);
+                    return &w->value();
+                    }
+            return 0;
+            }
 
         template <>
-        struct
-        get_info<throw_function>
+        inline
+        char const * *
+        get_info<throw_function>( exception const & x )
             {
-            static
-            char const * *
-            get( exception const & x )
-                {
-                return x.throw_function_ ? &x.throw_function_ : 0;
-                }
-            };
+            char const * & v=access_throw_function(x);
+            return v ? &v : 0;
+            }
 
         template <>
-        struct
-        get_info<throw_file>
+        inline
+        char const * *
+        get_info<throw_file>( exception const & x )
             {
-            static
-            char const * *
-            get( exception const & x )
-                {
-                return x.throw_file_ ? &x.throw_file_ : 0;
-                }
-            };
+            char const * & v=access_throw_file(x);
+            return v ? &v : 0;
+            }
 
         template <>
-        struct
-        get_info<throw_line>
+        inline
+        int *
+        get_info<throw_line>( exception const & x )
             {
-            static
-            int *
-            get( exception const & x )
-                {
-                return x.throw_line_!=-1 ? &x.throw_line_ : 0;
-                }
-            };
+            int & v=access_throw_line(x);
+            return v!=-1 ? &v : 0;
+            }
 
         template <class T,class R>
         struct
@@ -104,14 +96,14 @@ boost
     typename ErrorInfo::value_type const *
     get_error_info( boost::exception const & x )
         {
-        return exception_detail::get_info<ErrorInfo>::get(x);
+        return exception_detail::get_info<ErrorInfo>(x);
         }
     template <class ErrorInfo>
     inline
     typename ErrorInfo::value_type *
     get_error_info( boost::exception & x )
         {
-        return exception_detail::get_info<ErrorInfo>::get(x);
+        return exception_detail::get_info<ErrorInfo>(x);
         }
 #else
     template <class ErrorInfo,class E>
@@ -120,7 +112,7 @@ boost
     get_error_info( E & some_exception )
         {
         if( exception const * x = dynamic_cast<exception const *>(&some_exception) )
-            return exception_detail::get_info<ErrorInfo>::get(*x);
+            return exception_detail::get_info<ErrorInfo>(*x);
         else
             return 0;
         }

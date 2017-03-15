@@ -141,8 +141,8 @@ int
 main()
     {
     boost_throw_exception_test();
-    tester<boost::exception_test::derives_boost_exception>();
-    tester<boost::exception_test::derives_boost_exception_virtually>();
-    tester<boost::exception_test::derives_std_exception>();
+    tester<boost::exception_test::derives_from_boost_exception>();
+    tester<boost::exception_test::derives_from_boost_exception_virtually>();
+    tester<boost::exception_test::derives_from_std_exception>();
     return boost::report_errors();
     }

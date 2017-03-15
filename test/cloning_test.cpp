@@ -56,7 +56,7 @@ derives_nothing
     };
 
 struct
-derives_std_exception:
+derives_from_std_exception:
     std::exception
     {
     };
@@ -80,7 +80,7 @@ derives_std_boost_exception:
     };
 
 struct
-derives_boost_exception:
+derives_from_boost_exception:
     boost::exception
     {
     };
@@ -335,7 +335,7 @@ main()
 
     try
         {
-        throw boost::enable_current_exception(derives_std_exception());
+        throw boost::enable_current_exception(derives_from_std_exception());
         }
     catch(
     ... )
@@ -350,7 +350,7 @@ main()
             BOOST_TEST(false);
             }
         catch(
-        derives_std_exception & )
+        derives_from_std_exception & )
             {
             boost::exception_ptr p = boost::current_exception();
             BOOST_TEST(!(p==boost::exception_ptr()));
@@ -362,7 +362,7 @@ main()
                 BOOST_TEST(false);
                 }
             catch(
-            derives_std_exception & )
+            derives_from_std_exception & )
                 {
                 }
             catch(
@@ -380,7 +380,7 @@ main()
 
     try
         {
-        throw derives_std_exception();
+        throw derives_from_std_exception();
         }
     catch(
     ... )
@@ -399,7 +399,7 @@ main()
             {
 #ifndef BOOST_NO_RTTI
             std::type_info const * const * t=boost::get_error_info<boost::original_exception_type>(e);
-            BOOST_TEST(t!=0 && *t!=0 && **t==typeid(derives_std_exception));
+            BOOST_TEST(t!=0 && *t!=0 && **t==typeid(derives_from_std_exception));
 #endif
             }
         catch(
@@ -490,7 +490,7 @@ main()
 
     try
         {
-        throw derives_boost_exception() << my_info(42);
+        throw derives_from_boost_exception() << my_info(42);
         }
     catch(
     ... )
@@ -513,7 +513,7 @@ main()
 #ifndef BOOST_NO_RTTI
                 {
             std::type_info const * const * t=boost::get_error_info<boost::original_exception_type>(x);
-            BOOST_TEST(t && *t && **t==typeid(derives_boost_exception));
+            BOOST_TEST(t && *t && **t==typeid(derives_from_boost_exception));
                 }
 #endif
             boost::exception_ptr p = boost::current_exception();

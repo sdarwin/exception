@@ -16,31 +16,31 @@ boost
     exception_test
         {
         struct
-        derives_boost_exception:
+        derives_from_boost_exception:
             public boost::exception,
             public std::exception
             {
-            explicit derives_boost_exception( int x );
-            virtual ~derives_boost_exception() throw();
+            explicit derives_from_boost_exception( int x );
+            virtual ~derives_from_boost_exception() throw();
             int x_;
             };
 
         struct
-        derives_boost_exception_virtually:
+        derives_from_boost_exception_virtually:
             public virtual boost::exception,
             public std::exception
             {
-            explicit derives_boost_exception_virtually( int x );
-            virtual ~derives_boost_exception_virtually() throw();
+            explicit derives_from_boost_exception_virtually( int x );
+            virtual ~derives_from_boost_exception_virtually() throw();
             int x_;
             };
 
         struct
-        derives_std_exception:
+        derives_from_std_exception:
             public std::exception
             {
-            explicit derives_std_exception( int x );
-            virtual ~derives_std_exception() throw();
+            explicit derives_from_std_exception( int x );
+            virtual ~derives_from_std_exception() throw();
             int x_;
             };
 
@@ -48,13 +48,13 @@ boost
         void throw_test_exception( int );
 
         template <>
-        void throw_test_exception<derives_boost_exception>( int );
+        void throw_test_exception<derives_from_boost_exception>( int );
 
         template <>
-        void throw_test_exception<derives_boost_exception_virtually>( int );
+        void throw_test_exception<derives_from_boost_exception_virtually>( int );
 
         template <>
-        void throw_test_exception<derives_std_exception>( int );
+        void throw_test_exception<derives_from_std_exception>( int );
         }
     }
 
