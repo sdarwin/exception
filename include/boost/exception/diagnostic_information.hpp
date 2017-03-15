@@ -33,7 +33,7 @@ namespace
 boost
     {
     namespace
-    exception_detail
+    exception_detail_di
         {
         std::string diagnostic_information_impl( boost::exception const *, std::exception const *, bool, bool );
         }
@@ -45,7 +45,7 @@ boost
         boost::exception const * be=current_exception_cast<boost::exception const>();
         std::exception const * se=current_exception_cast<std::exception const>();
         if( be || se )
-            return exception_detail::diagnostic_information_impl(be,se,true,verbose);
+            return exception_detail_di::diagnostic_information_impl(be,se,true,verbose);
         else
             return "No diagnostic information available.";
         }
@@ -56,7 +56,7 @@ namespace
 boost
     {
     namespace
-    exception_detail
+    exception_detail_di
         {
         inline
         exception const *
@@ -68,9 +68,9 @@ boost
 #ifndef BOOST_NO_RTTI
         template <class T>
         typename enable_if<is_polymorphic<T>,exception const *>::type
-        get_boost_exception( T const & e )
+        get_boost_exception( T const * e )
             {
-            return dynamic_cast<exception const *>(&e);
+            return dynamic_cast<exception const *>(e);
             }
 #endif
 
@@ -91,9 +91,9 @@ boost
 #ifndef BOOST_NO_RTTI
         template <class T>
         typename enable_if<is_polymorphic<T>,std::exception const *>::type
-        get_boost_exception( T const & e )
+        get_std_exception( T const * e )
             {
-            return dynamic_cast<std::exception const *>(&e);
+            return dynamic_cast<std::exception const *>(e);
             }
 #endif
 
@@ -112,7 +112,7 @@ boost
             try
                 {
 #endif
-                char const * di=error_info_container_impl::get_data_create(x).diagnostic_information(header);
+                char const * di=exception_detail::error_info_container_impl::get_data_create(x).diagnostic_information(header);
                 BOOST_ASSERT(di!=0);
                 return di;
 #ifndef BOOST_NO_EXCEPTIONS
@@ -140,7 +140,7 @@ boost
             if( with_what && se )
                 {
                 wh=se->what();
-                if( be && exception_detail::get_diagnostic_information(*be,0)==wh )
+                if( be && exception_detail_di::get_diagnostic_information(*be,0)==wh )
                     return wh;
                 }
             std::ostringstream tmp;
@@ -175,7 +175,7 @@ boost
             if( with_what && se && verbose )
                 tmp << "std::exception::what: " << wh << '\n';
             if( be )
-                if( char const * s=exception_detail::get_diagnostic_information(*be,tmp.str().c_str()) )
+                if( char const * s=exception_detail_di::get_diagnostic_information(*be,tmp.str().c_str()) )
                     if( *s )
                         return std::string(s);
             return tmp.str();
@@ -186,7 +186,7 @@ boost
     std::string
     diagnostic_information( T const & e, bool verbose=true )
         {
-        return exception_detail::diagnostic_information_impl(exception_detail::get_boost_exception(&e),exception_detail::get_std_exception(&e),true,verbose);
+        return exception_detail_di::diagnostic_information_impl(exception_detail_di::get_boost_exception(&e),exception_detail_di::get_std_exception(&e),true,verbose);
         }
 
     inline
@@ -198,8 +198,8 @@ boost
         try
             {
 #endif
-            (void) exception_detail::diagnostic_information_impl(&e,0,false,verbose);
-            if( char const * di=exception_detail::get_diagnostic_information(e,0) )
+            (void) exception_detail_di::diagnostic_information_impl(&e,0,false,verbose);
+            if( char const * di=exception_detail_di::get_diagnostic_information(e,0) )
                 return di;
             else
                 return "Failed to produce boost::diagnostic_information_what()";
