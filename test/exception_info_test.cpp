@@ -48,7 +48,7 @@ verify( E & e, typename Tag::type correct )
     BOOST_TEST(v!=0);
     typename Tag::type const * vc=xic->get<Tag>();
     BOOST_TEST(v==vc);
-    BOOST_TEST(*v==correct);
+    BOOST_TEST_EQ(*v,correct);
     }
 void
 test_exception_info_copy()
@@ -56,13 +56,13 @@ test_exception_info_copy()
     boost::exception_info xi1;
     xi1.set<tag1>(42);
     xi1.set<tag2>(42.42f);
-    BOOST_TEST(*xi1.get<tag1>()==42);
-    BOOST_TEST(*xi1.get<tag2>()==42.42f);
+    BOOST_TEST_EQ(*xi1.get<tag1>(),42);
+    BOOST_TEST_EQ(*xi1.get<tag2>(),42.42f);
     boost::exception_info xi2(xi1);
-    BOOST_TEST(*xi1.get<tag1>()==42);
-    BOOST_TEST(*xi1.get<tag2>()==42.42f);
-    BOOST_TEST(*xi2.get<tag1>()==42);
-    BOOST_TEST(*xi2.get<tag2>()==42.42f);
+    BOOST_TEST_EQ(*xi1.get<tag1>(),42);
+    BOOST_TEST_EQ(*xi1.get<tag2>(),42.42f);
+    BOOST_TEST_EQ(*xi2.get<tag1>(),42);
+    BOOST_TEST_EQ(*xi2.get<tag2>(),42.42f);
     BOOST_TEST(xi2.get<tag1>()!=xi1.get<tag1>());
     BOOST_TEST(xi2.get<tag2>()!=xi1.get<tag2>());
     }
@@ -72,13 +72,13 @@ test_exception_info_move()
     boost::exception_info xi1;
     xi1.set<tag1>(42);
     xi1.set<tag2>(42.42f);
-    BOOST_TEST(*xi1.get<tag1>()==42);
-    BOOST_TEST(*xi1.get<tag2>()==42.42f);
+    BOOST_TEST_EQ(*xi1.get<tag1>(),42);
+    BOOST_TEST_EQ(*xi1.get<tag2>(),42.42f);
     boost::exception_info xi2(std::move(xi1));
     BOOST_TEST(!xi1.get<tag1>());
     BOOST_TEST(!xi1.get<tag2>());
-    BOOST_TEST(*xi2.get<tag1>()==42);
-    BOOST_TEST(*xi2.get<tag2>()==42.42f);
+    BOOST_TEST_EQ(*xi2.get<tag1>(),42);
+    BOOST_TEST_EQ(*xi2.get<tag2>(),42.42f);
     }
 void
 test_exception_info_assignment()
@@ -86,13 +86,13 @@ test_exception_info_assignment()
     boost::exception_info xi1;
     xi1.set<tag1>(42);
     xi1.set<tag2>(42.42f);
-    BOOST_TEST(*xi1.get<tag1>()==42);
-    BOOST_TEST(*xi1.get<tag2>()==42.42f);
+    BOOST_TEST_EQ(*xi1.get<tag1>(),42);
+    BOOST_TEST_EQ(*xi1.get<tag2>(),42.42f);
     boost::exception_info xi2; xi2=xi1;
-    BOOST_TEST(*xi1.get<tag1>()==42);
-    BOOST_TEST(*xi1.get<tag2>()==42.42f);
-    BOOST_TEST(*xi2.get<tag1>()==42);
-    BOOST_TEST(*xi2.get<tag2>()==42.42f);
+    BOOST_TEST_EQ(*xi1.get<tag1>(),42);
+    BOOST_TEST_EQ(*xi1.get<tag2>(),42.42f);
+    BOOST_TEST_EQ(*xi2.get<tag1>(),42);
+    BOOST_TEST_EQ(*xi2.get<tag2>(),42.42f);
     BOOST_TEST(xi2.get<tag1>()!=xi1.get<tag1>());
     BOOST_TEST(xi2.get<tag2>()!=xi1.get<tag2>());
     }
@@ -102,13 +102,13 @@ test_exception_info_rv_assignment()
     boost::exception_info xi1;
     xi1.set<tag1>(42);
     xi1.set<tag2>(42.42f);
-    BOOST_TEST(*xi1.get<tag1>()==42);
-    BOOST_TEST(*xi1.get<tag2>()==42.42f);
+    BOOST_TEST_EQ(*xi1.get<tag1>(),42);
+    BOOST_TEST_EQ(*xi1.get<tag2>(),42.42f);
     boost::exception_info xi2; xi2=std::move(xi1);
     BOOST_TEST(!xi1.get<tag1>());
     BOOST_TEST(!xi1.get<tag2>());
-    BOOST_TEST(*xi2.get<tag1>()==42);
-    BOOST_TEST(*xi2.get<tag2>()==42.42f);
+    BOOST_TEST_EQ(*xi2.get<tag1>(),42);
+    BOOST_TEST_EQ(*xi2.get<tag2>(),42.42f);
     }
 void
 test_throw_catch()
@@ -145,7 +145,7 @@ test_throw_catch_info()
             {
             boost::exception_info * xi=boost::get_exception_info(e);
             BOOST_TEST(strcmp(xi->file(),__FILE__)==0);
-            BOOST_TEST(xi->line()==138);
+            BOOST_TEST_EQ(xi->line(),138);
             BOOST_TEST(strstr(xi->function(),"test_throw_catch_info")!=0);
             BOOST_TEST(xi!=0);
             xi->set<tag1>(43);
@@ -181,7 +181,7 @@ test_throw_catch_add_info()
             {
             xi.set<tag2>(42.42f);
             BOOST_TEST(xi.file()==0);
-            BOOST_TEST(xi.line()==0);
+            BOOST_TEST_EQ(xi.line(),0);
             BOOST_TEST(xi.function()==0);
             throw;
             }
@@ -240,7 +240,7 @@ test_diagnostic_info()
         {
         s2=boost::exception_diagnostic_info(e);
         }
-    BOOST_TEST(s2.size()>=s1.size());
+    BOOST_TEST_LE(s1.size(),s2.size());
     BOOST_TEST(s2.find(s1)!=std::string::npos);
     std::string s3;
     try
@@ -252,8 +252,7 @@ test_diagnostic_info()
         {
         s3=boost::exception_diagnostic_info(boost::current_exception());
         }
-    BOOST_TEST(s3==s2);
-    std::cout << "s1:" << s1 << '\n' << "s2:" << s2 << '\n' << "s3:" << s3 << '\n';
+    BOOST_TEST_EQ(s3,s2);
     }
 int
 main()
