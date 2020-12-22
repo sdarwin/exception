@@ -10,6 +10,8 @@ import testing ;
 project
     : requirements
         <link>static
+        <toolset>gcc:<cxxflags>-Wno-c99-extensions
+        <toolset>clang:<cxxflags>-Wno-c99-extensions
     ;
 
 #to_string
