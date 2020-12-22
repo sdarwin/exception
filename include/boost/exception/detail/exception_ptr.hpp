@@ -508,7 +508,9 @@ boost
         rethrow_exception_( exception_ptr const & p )
             {
             BOOST_ASSERT(p);
-#ifndef BOOST_NO_CXX11_HDR_EXCEPTION
+#if defined( BOOST_NO_CXX11_HDR_EXCEPTION ) || defined( BOOST_NO_EXCEPTIONS )
+            p.ptr_->rethrow();
+#else
             try
                 {
                 p.ptr_->rethrow();
@@ -519,8 +521,6 @@ boost
                 // if an std::exception_ptr was wrapped above then rethrow it
                 std::rethrow_exception(wrp.p);
                 }
-#else
-            p.ptr_->rethrow();
 #endif
             }
         }

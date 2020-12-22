@@ -10,8 +10,6 @@ import testing ;
 project
     : requirements
         <link>static
-        <toolset>gcc:<cxxflags>-Wno-c99-extensions
-        <toolset>clang:<cxxflags>-Wno-c99-extensions
     ;
 
 #to_string
@@ -29,7 +27,8 @@ run 2-throw_exception_no_exceptions_test.cpp : : : <exception-handling>off ;
 run 3-throw_exception_no_integration_test.cpp : : : <exception-handling>on ;
 run 4-throw_exception_no_both_test.cpp : : : <exception-handling>off ;
 run cloning_test.cpp : : : <exception-handling>on ;
-run copy_exception_test.cpp ../../thread/src/tss_null.cpp /boost//thread : : : <threading>multi <rtti>on ;
+run copy_exception_test.cpp ../../thread/src/tss_null.cpp /boost//thread : : : <threading>multi ;
+run copy_exception_no_exceptions_test.cpp : : : <exception-handling>off ;
 run unknown_exception_test.cpp : : : <exception-handling>on ;
 run exception_test.cpp : : : <exception-handling>on ;
 run enable_error_info_test.cpp helper1.cpp : : : <exception-handling>on ;
