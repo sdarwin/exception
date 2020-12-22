@@ -41,14 +41,14 @@ namespace
 boost
     {
     class exception_ptr;
-    BOOST_NORETURN void rethrow_exception( exception_ptr const & );
+    namespace exception_detail { void rethrow_exception_( exception_ptr const & ); }
 
     class
     exception_ptr
         {
         typedef boost::shared_ptr<exception_detail::clone_base const> impl;
         impl ptr_;
-        friend void rethrow_exception( exception_ptr const & );
+        friend void exception_detail::rethrow_exception_( exception_ptr const & );
         typedef exception_detail::clone_base const * (impl::*unspecified_bool_type)() const;
         public:
         exception_ptr()
@@ -500,33 +500,44 @@ boost
         }
 #endif // ifndef BOOST_NO_EXCEPTIONS
 
+    namespace
+    exception_detail
+        {
+        inline
+        void
+        rethrow_exception_( exception_ptr const & p )
+            {
+            BOOST_ASSERT(p);
+#ifndef BOOST_NO_CXX11_HDR_EXCEPTION
+            try
+                {
+                p.ptr_->rethrow();
+                }
+            catch(
+            std_exception_ptr_wrapper const & wrp)
+                {
+                // if an std::exception_ptr was wrapped above then rethrow it
+                std::rethrow_exception(wrp.p);
+                }
+#else
+            p.ptr_->rethrow();
+#endif
+            }
+        }
+
     BOOST_NORETURN
     inline
     void
     rethrow_exception( exception_ptr const & p )
         {
-        BOOST_ASSERT(p);
-#ifndef BOOST_NO_CXX11_HDR_EXCEPTION
-        try
-            {
-            p.ptr_->rethrow();
-            }
-        catch(
-        exception_detail::std_exception_ptr_wrapper const & wrp)
-            {
-            // if an std::exception_ptr was wrapped above then rethrow it
-            std::rethrow_exception(wrp.p);
-            }
-#else
-        p.ptr_->rethrow();
-#endif
+        exception_detail::rethrow_exception_(p);
         BOOST_ASSERT(0);
-        #if defined(UNDER_CE)
-            // some CE platforms don't define ::abort()
-            exit(-1);
-        #else
-            abort();
-        #endif
+#if defined(UNDER_CE)
+        // some CE platforms don't define ::abort()
+        exit(-1);
+#else
+        abort();
+#endif
         }
 
     inline
