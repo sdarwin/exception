@@ -3,7 +3,12 @@
 //Distributed under the Boost Software License, Version 1.0. (See accompanying
 //file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
-#define BOOST_NORETURN
+#include <boost/config.hpp>
+
+#if defined( BOOST_NO_EXCEPTIONS )
+#   error This program requires exception handling.
+#endif
+
 #include <boost/exception_ptr.hpp>
 #include <boost/exception/get_error_info.hpp>
 #include <boost/thread.hpp>
@@ -43,39 +48,6 @@ err:
     };
 
 
-#ifdef BOOST_NO_EXCEPTIONS
-
-namespace
-    {
-    bool throw_exception_called;
-    }
-
-// It is not valid to return to the caller but we do for testing purposes.
-namespace
-boost
-    {
-    void
-    throw_exception( std::exception const & e )
-        {
-        throw_exception_called = true;
-        BOOST_TEST(dynamic_cast<err const *>(&e)!=0);
-        int const * ans=boost::get_error_info<answer>(e);
-        BOOST_TEST(ans && *ans==42);
-        }
-
-    struct source_location;
-    void
-    throw_exception( std::exception const & e, boost::source_location const & )
-        {
-        throw_exception_called = true;
-        BOOST_TEST(dynamic_cast<err const *>(&e)!=0);
-        int const * ans=boost::get_error_info<answer>(e);
-        BOOST_TEST(ans && *ans==42);
-        }
-    }
-
-#endif
-
 class
 future
     {
@@ -101,11 +73,7 @@ future
         boost::unique_lock<boost::mutex> lck(mux_);
         while( !ready_ )
             cond_.wait(lck);
-#ifdef BOOST_NO_EXCEPTIONS
-        boost::exception_detail::rethrow_exception_(exc_);
-#else
         rethrow_exception(exc_);
-#endif
         }
 
     private:
@@ -127,9 +95,6 @@ consumer()
     {
     future f;
     boost::thread thr(boost::bind(&producer, boost::ref(f)));
-#ifdef BOOST_NO_EXCEPTIONS
-    f.get_exception();
-#else
     try
         {
         f.get_exception();
@@ -140,7 +105,6 @@ consumer()
         int const * ans=boost::get_error_info<answer>(e);
         BOOST_TEST(ans && *ans==42);
         }
-#endif
     thr.join();
     }
 
@@ -164,13 +128,6 @@ void
 simple_test()
     {
     boost::exception_ptr p = boost::copy_exception(err() << answer(42));
-#ifdef BOOST_NO_EXCEPTIONS
-        {
-        throw_exception_called = false;
-        boost::exception_detail::rethrow_exception_(p);
-        BOOST_TEST(throw_exception_called);
-        }
-#else
     try
         {
         rethrow_exception(p);
@@ -185,7 +142,6 @@ simple_test()
         {
         BOOST_TEST(false);
         }
-#endif
     }
 
 int
