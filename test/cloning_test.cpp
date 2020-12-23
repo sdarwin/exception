@@ -429,7 +429,9 @@ main()
     test_std_exception_what<std::range_error>();
     test_std_exception_what<std::overflow_error>();
     test_std_exception_what<std::underflow_error>();
+#if (__clang_major__*100+__clang_minor__<305) || (__clang_major__*100+__clang_minor__>307)
     test_std_exception_what<std::ios_base::failure>();
+#endif
     test_std_exception_what<std::runtime_error>();
     test_std_exception<std::bad_alloc>();
 #ifndef BOOST_NO_TYPEID
